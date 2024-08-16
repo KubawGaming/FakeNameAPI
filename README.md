@@ -53,6 +53,7 @@ fakeNameAPI.getSeeingNick(playerWhoShouldSeeTargetNewName, targetToChangeNick);
 fakeNameAPI.unsetFakeName(targetToChangeNick, playerWhoShouldSeeTargetNewName);
 
 // And this is how you can remove the fake nickname:
+// (All players who have seen a player's fake nickname will see the player's real nickname after using this)
 fakeNameAPI.resetName(targetToChangeNick);
 ```
 
