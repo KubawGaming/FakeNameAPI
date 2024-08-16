@@ -1,4 +1,4 @@
-# BetterRunnableAPI
+# FakeNameAPI
 <bold>[![](https://jitpack.io/v/KubawGaming/FakeNameAPI.svg)](https://jitpack.io/#KubawGaming/FakeNameAPI)</bold> <strong>Its project version used in gradle/maven</strong>
 
 <br>
