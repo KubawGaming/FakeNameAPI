@@ -40,10 +40,17 @@ fakeNameAPI.setFakeName(targetToChangeNick, "Anonymous", Bukkit.getOnlinePlayers
 
 // Checking someone's fake nickname:
 if(fakeNameAPI.getFakeNames().containsKey(targetToChangeNick)) {
-    // Code if target have set fake nick
+    // Code if the target has a fake nickname set
 } else {
-    // Code if target 
+    // Code if the target hasn't a fake nickname set
 }
+
+// Getting a nickname that a player sees in another player
+// if `playerWhoShouldSeeTargetNewName` does not see a fake nick, this method will return the real nick targetToChangeNick
+fakeNameAPI.getSeeingNick(playerWhoShouldSeeTargetNewName, targetToChangeNick);
+
+// And this is how you can remove the fake nickname:
+fakeNameAPI.resetName(targetToChangeNick);
 ```
 
 ## Gradle:
