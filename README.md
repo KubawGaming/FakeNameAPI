@@ -39,7 +39,7 @@ fakeNameAPI.setFakeName(targetToChangeNick, "Anonymous", playerWhoShouldSeeTarge
 fakeNameAPI.setFakeName(targetToChangeNick, "Anonymous", Bukkit.getOnlinePlayers());
 
 // Checking someone's fake nickname:
-if(fakeNameAPI.getFakeNames().containsKey(targetToChangeNick)) {
+if(fakeNameAPI.hasFakeNick(targetToChangeNick)) {
     // Code if the target has a fake nickname set
 } else {
     // Code if the target hasn't a fake nickname set
