@@ -25,7 +25,7 @@ public class Main extends JavaPlugin {
 }
 ```
 
-That's how we change someone's nickname:
+Below are examples of how to operate on the API:
 
 ```java
 FakeNameAPI fakeNameAPI = FakeNameAPI.getInstance();
@@ -37,6 +37,13 @@ fakeNameAPI.setFakeName(targetToChangeNick, "Anonymous", playerWhoShouldSeeTarge
 
 // Setting a fake nickname visible for all players
 fakeNameAPI.setFakeName(targetToChangeNick, "Anonymous", Bukkit.getOnlinePlayers());
+
+// Checking someone's fake nickname:
+if(fakeNameAPI.getFakeNames().containsKey(targetToChangeNick)) {
+    // Code if target have set fake nick
+} else {
+    // Code if target 
+}
 ```
 
 ## Gradle:
