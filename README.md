@@ -6,10 +6,37 @@ A small and simple library based on packets that allows you to easily change pla
 
 ## Example of use:
 
+At the very beginning you need to create an instance of the FakeNameAPI class. Note - make only one instance!
+
+You will not have to save your instance. After creating it, you will have access to FakeNameAPI through the static method.
+
+```java
+public class Main extends JavaPlugin {
+
+    @Override
+    public void onEnable() {
+        // We are creating FakeNameAPI instance and giving Main class (that extends JavaPlugin) as argument
+        new FakeNameAPI(this);
+
+        // After creating the instance you are able to get FakeNameAPI using:
+        FakeNameAPI fakeNameAPI = FakeNameAPI.getInstance();
+    }
+
+}
+```
+
 That's how we change someone's nickname:
 
 ```java
-//TODO example
+FakeNameAPI fakeNameAPI = FakeNameAPI.getInstance();
+Player targetToChangeNick = ...;
+Player playerWhoShouldSeeTargetNewName = ...;
+
+// Setting a fake nickname visible to one player:
+fakeNameAPI.setFakeName(targetToChangeNick, "Anonymous", playerWhoShouldSeeTargetNewName);
+
+// Setting a fake nickname visible for all players
+fakeNameAPI.setFakeName(targetToChangeNick, "Anonymous", Bukkit.getOnlinePlayers());
 ```
 
 ## Gradle:
