@@ -2,32 +2,28 @@ package me.kubaw208.fakenameapi;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
-import com.github.retrooper.packetevents.protocol.player.UserProfile;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoUpdate;
 import lombok.Getter;
 import me.kubaw208.fakenameapi.events.PlayerInfoUpdateListener;
 import me.kubaw208.fakenameapi.events.PlayerQuitListener;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public final class FakeNameAPI {
 
     private final JavaPlugin plugin;
-    private boolean isRegistered = false;
-    @Getter private final HashMap<UUID, FakeNameData> fakeNames = new HashMap<>();
+    @Getter private static FakeNameAPI instance;
+    @Getter private final HashMap<UUID, HashMap<UUID, String>> fakeNames = new HashMap<>();
 
     public FakeNameAPI(JavaPlugin plugin) {
         this.plugin = plugin;
-    }
+        instance = this;
 
-    public record FakeNameData(String fakeName, Collection<Player> receivers) {}
+        PacketEvents.getAPI().getEventManager().registerListener(new PlayerInfoUpdateListener(this), PacketListenerPriority.HIGH);
+        plugin.getServer().getPluginManager().registerEvents(new PlayerQuitListener(this), plugin);
+    }
 
     /**
      * Sends packet with fake name for given player to given packet receivers.
@@ -36,22 +32,17 @@ public final class FakeNameAPI {
      * @param packetReceivers players that will see new fake name for `playerToChange`
      */
     public void setFakeName(Player playerToChange, String newFakeName, Player... packetReceivers) {
-        var packet = new WrapperPlayServerPlayerInfoUpdate(
-                WrapperPlayServerPlayerInfoUpdate.Action.UPDATE_DISPLAY_NAME,
-                new WrapperPlayServerPlayerInfoUpdate.PlayerInfo(
-                        new UserProfile(playerToChange.getUniqueId(), playerToChange.getName()),
-                        true,
-                        playerToChange.getPing(),
-                        null,
-                        Component.text(newFakeName),
-                        null
-                ));
-
-        if(isRegistered)
-            fakeNames.put(playerToChange.getUniqueId(), new FakeNameData(newFakeName, List.of(packetReceivers)));
+        fakeNames.put(playerToChange.getUniqueId(), new HashMap<>() {{
+            for(Player receiver : packetReceivers) {
+                put(receiver.getUniqueId(), newFakeName);
+            }
+        }});
 
         for(Player receiver : packetReceivers) {
-            PacketEvents.getAPI().getPlayerManager().sendPacket(receiver, packet);
+            if(!receiver.canSee(playerToChange)) continue;
+
+            receiver.hidePlayer(plugin, playerToChange);
+            receiver.showPlayer(plugin, playerToChange);
         }
     }
 
@@ -76,23 +67,68 @@ public final class FakeNameAPI {
     }
 
     /**
+     * Sends packet with real name for given player to given packet receivers.
+     * @param playerWithFakeNick player that nick is changed (fake)
+     * @param packetReceivers players who will see the 'playerWithFakeNick' real nick
+     */
+    public void unsetFakeName(Player playerWithFakeNick, Player... packetReceivers) {
+        setFakeName(playerWithFakeNick, playerWithFakeNick.getName(), packetReceivers);
+
+        for(Player packetReceiver : packetReceivers) {
+            fakeNames.getOrDefault(playerWithFakeNick.getUniqueId(), new HashMap<>()).remove(packetReceiver.getUniqueId());
+        }
+    }
+
+    /**
+     * Sends packet with real name for given player to given packet receivers.
+     * @param playerWithFakeNick player that nick is changed (fake)
+     * @param packetReceivers players who will see the 'playerWithFakeNick' real nick
+     */
+    public void unsetFakeName(Player playerWithFakeNick, Collection<? extends Player> packetReceivers) {
+        setFakeName(playerWithFakeNick, playerWithFakeNick.getName(), packetReceivers);
+
+        for(Player packetReceiver : packetReceivers) {
+            fakeNames.getOrDefault(playerWithFakeNick.getUniqueId(), new HashMap<>()).remove(packetReceiver.getUniqueId());
+        }
+    }
+
+    /**
+     * Sends packet with real name for given player to given packet receivers.
+     * @param playerWithFakeNick player that nick is changed (fake)
+     * @param packetReceivers players who will see the 'playerWithFakeNick' real nick
+     */
+    public void unsetFakeName(Player playerWithFakeNick, List<Player> packetReceivers) {
+        setFakeName(playerWithFakeNick, playerWithFakeNick.getName(), packetReceivers);
+
+        for(Player packetReceiver : packetReceivers) {
+            fakeNames.getOrDefault(playerWithFakeNick.getUniqueId(), new HashMap<>()).remove(packetReceiver.getUniqueId());
+        }
+    }
+
+    /**
+     * Checks if the player had a fake nickname set up.
+     * @param player player to check
+     */
+    public boolean hasFakeNick(Player player) {
+        return fakeNames.containsKey(player.getUniqueId());
+    }
+
+    /**
+     * Gets target name that player sees.
+     * @param player player seeing target
+     * @param target target being seen by player
+     */
+    public String getSeeingNick(Player player, Player target) {
+        return fakeNames.get(target.getUniqueId()).getOrDefault(player.getUniqueId(), target.getName());
+    }
+
+    /**
      * Resets fake name to default player name for all players on the server.
      * @param playerToChange player that nick will be reset
      */
     public void resetName(Player playerToChange) {
         setFakeName(playerToChange, playerToChange.getName(), Bukkit.getOnlinePlayers());
         fakeNames.remove(playerToChange.getUniqueId());
-    }
-
-    /**
-     * Register API events that keep fake nicks set up
-     */
-    public void registerEvents() {
-        if(isRegistered) return;
-
-        isRegistered = true;
-        PacketEvents.getAPI().getEventManager().registerListener(new PlayerInfoUpdateListener(this), PacketListenerPriority.HIGH);
-        plugin.getServer().getPluginManager().registerEvents(new PlayerQuitListener(this), plugin);
     }
 
 }

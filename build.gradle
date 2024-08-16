@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'io.github.goooler.shadow' version '8.1.7'
 }
 
 group = 'me.kubaw208'
@@ -54,4 +55,17 @@ processResources {
     filesMatching('plugin.yml') {
         expand props
     }
+}
+
+shadowJar {
+    minimize()
+
+    if (project.hasProperty('shadowJar_destinationDirectory')) {
+        destinationDirectory.set(file(getProperty('shadowJar_destinationDirectory')))
+    }
+
+    relocate 'de.exlll', 'pl.mcts.controller.sharedlibs.de.exlll'
+
+    archiveFileName = "${project.name}.jar"
+    exclude "hotswap-agent.properties"
 }

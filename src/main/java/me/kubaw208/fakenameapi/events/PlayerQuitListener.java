@@ -6,6 +6,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.util.HashMap;
+import java.util.UUID;
+
 public class PlayerQuitListener implements Listener {
 
     private final FakeNameAPI fakeNameAPI;
@@ -18,12 +21,12 @@ public class PlayerQuitListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
 
-        fakeNameAPI.getFakeNames().remove(player);
+        fakeNameAPI.getFakeNames().remove(player.getUniqueId());
 
-        for(var fakeNameData : fakeNameAPI.getFakeNames().values()) {
-            if(!fakeNameData.receivers().contains(player)) continue;
+        for(HashMap<UUID, String> fakeNameData : fakeNameAPI.getFakeNames().values()) {
+            if(!fakeNameData.containsKey(player.getUniqueId())) continue;
 
-            fakeNameData.receivers().remove(player);
+            fakeNameData.remove(player.getUniqueId());
         }
     }
 
