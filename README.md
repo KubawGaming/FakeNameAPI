@@ -49,6 +49,9 @@ if(fakeNameAPI.getFakeNames().containsKey(targetToChangeNick)) {
 // if `playerWhoShouldSeeTargetNewName` does not see a fake nick, this method will return the real nick targetToChangeNick
 fakeNameAPI.getSeeingNick(playerWhoShouldSeeTargetNewName, targetToChangeNick);
 
+// If for `player A` you want to reset the fake nickname he sees in `player B`, you can do it like this:
+fakeNameAPI.unsetFakeName(targetToChangeNick, playerWhoShouldSeeTargetNewName);
+
 // And this is how you can remove the fake nickname:
 fakeNameAPI.resetName(targetToChangeNick);
 ```
