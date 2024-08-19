@@ -2,7 +2,7 @@
 <bold>[![](https://jitpack.io/v/KubawGaming/FakeNameAPI.svg)](https://jitpack.io/#KubawGaming/FakeNameAPI)</bold> <strong>Its project version used in gradle/maven</strong>
 
 <br>
-A small and simple library based on packets that allows you to easily change players' nicknames and control who sees the changed nickname.
+A small and simple API based on packets that allows you to easily change players' nicknames and control who sees the changed nickname.
 
 ## Example of use:
 
