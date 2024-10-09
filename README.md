@@ -2,7 +2,11 @@
 <bold>[![](https://jitpack.io/v/KubawGaming/FakeNameAPI.svg)](https://jitpack.io/#KubawGaming/FakeNameAPI)</bold> <strong>Its project version used in gradle/maven</strong>
 
 <br>
-A small and simple library based on packets that allows you to easily change players' nicknames and control who sees the changed nickname.
+A small and simple API based on packets that allows you to easily change players' nicknames and control who sees the changed nickname.
+
+## Plugins required
+
+If you want to use this API so that it does not throw errors your server must have the <a href="https://www.spigotmc.org/resources/packetevents-api.80279/" target="_blank">packetevents</a> plugin installed.
 
 ## Example of use:
 
@@ -35,10 +39,10 @@ Player playerWhoShouldSeeTargetNewName = ...;
 // Setting a fake nickname visible to one player:
 fakeNameAPI.setFakeName(targetToChangeNick, "Anonymous", playerWhoShouldSeeTargetNewName);
 
-// Setting a fake nickname visible for all players
+// Setting a fake nickname visible for all players:
 fakeNameAPI.setFakeName(targetToChangeNick, "Anonymous", Bukkit.getOnlinePlayers());
 
-// Checking someone's fake nickname:
+// Checking if a player has a fake nick set up:
 if(fakeNameAPI.hasFakeNick(targetToChangeNick)) {
     // Code if the target has a fake nickname set
 } else {
@@ -52,7 +56,7 @@ fakeNameAPI.getSeeingNick(playerWhoShouldSeeTargetNewName, targetToChangeNick);
 // If for `player A` you want to reset the fake nickname he sees in `player B`, you can do it like this:
 fakeNameAPI.unsetFakeName(targetToChangeNick, playerWhoShouldSeeTargetNewName);
 
-// And this is how you can remove the fake nickname:
+// And this is how you can remove the fake nickname
 // (All players who have seen a player's fake nickname will see the player's real nickname after using this)
 fakeNameAPI.resetName(targetToChangeNick);
 ```
