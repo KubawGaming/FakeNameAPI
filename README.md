@@ -42,11 +42,11 @@ fakeNameAPI.setFakeName(targetToChangeNick, "Anonymous", playerWhoShouldSeeTarge
 // Setting a fake nickname visible for all players:
 fakeNameAPI.setFakeName(targetToChangeNick, "Anonymous", Bukkit.getOnlinePlayers());
 
-// Checking if a player has a fake nick set up:
-if(fakeNameAPI.hasFakeNick(targetToChangeNick)) {
-    // Code if the target has a fake nickname set
+// Checking if player sees fake nick for target
+if(fakeNameAPI.canSeeFakeNick(playerWhoShouldSeeTargetNewName, targetToChangeNick)) {
+    // Code if the target has a fake nickname set for player's perspective
 } else {
-    // Code if the target hasn't a fake nickname set
+    // Code if the target hasn't a fake nickname set for player's perspective
 }
 
 // Getting a nickname that a player sees in another player
