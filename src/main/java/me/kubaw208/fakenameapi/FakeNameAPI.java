@@ -1,11 +1,13 @@
 package me.kubaw208.fakenameapi;
 
 import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.event.PacketListenerCommon;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import lombok.Getter;
 import me.kubaw208.fakenameapi.events.PlayerInfoUpdateListener;
 import me.kubaw208.fakenameapi.events.PlayerQuitListener;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -16,13 +18,18 @@ public final class FakeNameAPI {
     private final JavaPlugin plugin;
     @Getter private static FakeNameAPI instance;
     @Getter private final HashMap<UUID, HashMap<UUID, String>> fakeNames = new HashMap<>();
+    private final PacketListenerCommon packetListener;
 
     public FakeNameAPI(JavaPlugin plugin) {
         this.plugin = plugin;
         instance = this;
 
-        PacketEvents.getAPI().getEventManager().registerListener(new PlayerInfoUpdateListener(this), PacketListenerPriority.HIGH);
+        packetListener = PacketEvents.getAPI().getEventManager().registerListener(new PlayerInfoUpdateListener(this), PacketListenerPriority.HIGH);
         plugin.getServer().getPluginManager().registerEvents(new PlayerQuitListener(this), plugin);
+
+        for(Player player : Bukkit.getOnlinePlayers()) {
+            fakeNames.put(player.getUniqueId(), new HashMap<>());
+        }
     }
 
     /**
@@ -32,7 +39,11 @@ public final class FakeNameAPI {
      * @param packetReceivers players that will see new fake name for `playerToChange`
      */
     public void setFakeName(Player playerToChange, String newFakeName, Player... packetReceivers) {
+        HashMap<UUID, String> previousReceivers = fakeNames.getOrDefault(playerToChange.getUniqueId(), new HashMap<>());
+
         fakeNames.put(playerToChange.getUniqueId(), new HashMap<>() {{
+            putAll(previousReceivers);
+
             for(Player receiver : packetReceivers) {
                 put(receiver.getUniqueId(), newFakeName);
             }
@@ -69,14 +80,12 @@ public final class FakeNameAPI {
     /**
      * Sends packet with real name for given player to given packet receivers.
      * @param playerWithFakeNick player that nick is changed (fake)
-     * @param packetReceivers players who will see the 'playerWithFakeNick' real nick
+     * @param packetReceivers players who will see the 'playerWithFakeNick' real nick (if you send no packet receivers, this method does nothing!)
      */
     public void unsetFakeName(Player playerWithFakeNick, Player... packetReceivers) {
-        setFakeName(playerWithFakeNick, playerWithFakeNick.getName(), packetReceivers);
+        if(packetReceivers.length == 0) return;
 
-        for(Player packetReceiver : packetReceivers) {
-            fakeNames.getOrDefault(playerWithFakeNick.getUniqueId(), new HashMap<>()).remove(packetReceiver.getUniqueId());
-        }
+        setFakeName(playerWithFakeNick, playerWithFakeNick.getName(), packetReceivers);
     }
 
     /**
@@ -86,10 +95,6 @@ public final class FakeNameAPI {
      */
     public void unsetFakeName(Player playerWithFakeNick, Collection<? extends Player> packetReceivers) {
         setFakeName(playerWithFakeNick, playerWithFakeNick.getName(), packetReceivers);
-
-        for(Player packetReceiver : packetReceivers) {
-            fakeNames.getOrDefault(playerWithFakeNick.getUniqueId(), new HashMap<>()).remove(packetReceiver.getUniqueId());
-        }
     }
 
     /**
@@ -99,36 +104,45 @@ public final class FakeNameAPI {
      */
     public void unsetFakeName(Player playerWithFakeNick, List<Player> packetReceivers) {
         setFakeName(playerWithFakeNick, playerWithFakeNick.getName(), packetReceivers);
-
-        for(Player packetReceiver : packetReceivers) {
-            fakeNames.getOrDefault(playerWithFakeNick.getUniqueId(), new HashMap<>()).remove(packetReceiver.getUniqueId());
-        }
     }
 
     /**
-     * Checks if the player had a fake nickname set up.
-     * @param player player to check
+     * Checks if the target has a fake nickname set for player perspective.
+     * @param player player to check if he sees target fake nick
+     * @param target target to check if player sees his fake nick
      */
-    public boolean hasFakeNick(Player player) {
-        return fakeNames.containsKey(player.getUniqueId());
+    public boolean canSeeFakeNick(Player player, Player target) {
+        return !fakeNames.getOrDefault(target.getUniqueId(), new HashMap<>())
+                .getOrDefault(player.getUniqueId(), target.getName()).equals(target.getName());
     }
 
     /**
-     * Gets target name that player sees.
+     * Gets target name that player sees. If target has not set fake name, then it returns target default name.
      * @param player player seeing target
      * @param target target being seen by player
      */
     public String getSeeingNick(Player player, Player target) {
+        if(!canSeeFakeNick(player, target))
+            return target.getName();
+
         return fakeNames.get(target.getUniqueId()).getOrDefault(player.getUniqueId(), target.getName());
     }
 
     /**
      * Resets fake name to default player name for all players on the server.
-     * @param playerToChange player that nick will be reset
+     * @param playerToReset player that nick will be reset
      */
-    public void resetName(Player playerToChange) {
-        setFakeName(playerToChange, playerToChange.getName(), Bukkit.getOnlinePlayers());
-        fakeNames.remove(playerToChange.getUniqueId());
+    public void resetName(Player playerToReset) {
+        setFakeName(playerToReset, playerToReset.getName(), Bukkit.getOnlinePlayers());
+        fakeNames.get(playerToReset.getUniqueId()).clear();
+    }
+
+    /**
+     * If you want to introduce compatibility with reloading your plugin when using FakeNameAPI
+     * use this method to unregister events in onDisable() to prevent creation of more events and not closing previous ones
+     */
+    public void unregisterAllFakeNameAPIEvents() {
+        PacketEvents.getAPI().getEventManager().unregisterListener(packetListener);
     }
 
 }
